@@ -1,531 +1,290 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-
-  <title>IGNOU RC Delhi-2 - Camera Test</title>
-
-  <style>
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      margin: 0;
-      padding: 20px;
-      font-family: Arial, sans-serif;
-      background: #f1f4f8;
-      color: #222;
-    }
-
-    .container {
-      width: 100%;
-      max-width: 520px;
-      margin: 20px auto;
-      background: #ffffff;
-      border-radius: 18px;
-      padding: 24px;
-      box-shadow: 0 4px 18px rgba(0,0,0,0.12);
-    }
-
-    h1 {
-      margin: 0;
-      text-align: center;
-      font-size: 28px;
-    }
-
-    h2 {
-      margin: 8px 0 0;
-      text-align: center;
-      font-size: 20px;
-      color: #444;
-    }
-
-    h3 {
-      margin: 10px 0 24px;
-      text-align: center;
-      font-size: 17px;
-    }
-
-    .info {
-      background: #eaf2ff;
-      border-radius: 10px;
-      padding: 15px;
-      margin-bottom: 18px;
-      line-height: 1.5;
-      color: #174d91;
-    }
-
-    video,
-    canvas,
-    #capturedPhoto {
-      width: 100%;
-      border-radius: 12px;
-      background: #111;
-    }
-
-    video {
-      display: none;
-      transform: scaleX(-1);
-      margin-top: 15px;
-    }
-
-    #capturedPhoto {
-      display: none;
-      margin-top: 15px;
-    }
-
-    canvas {
-      display: none;
-    }
-
-    button {
-      width: 100%;
-      border: none;
-      border-radius: 10px;
-      padding: 15px;
-      margin-top: 14px;
-      font-size: 17px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    #startButton {
-      background: #1a73e8;
-      color: white;
-    }
-
-    #captureButton {
-      display: none;
-      background: #16883a;
-      color: white;
-    }
-
-    #retakeButton {
-      display: none;
-      background: #f0ad00;
-      color: #111;
-    }
-
-    .status {
-      margin-top: 16px;
-      padding: 14px;
-      border-radius: 10px;
-      text-align: center;
-      line-height: 1.5;
-      display: none;
-    }
-
-    .success {
-      display: block;
-      background: #e8f5e9;
-      color: #14752d;
-      border: 1px solid #92d6a2;
-    }
-
-    .error {
-      display: block;
-      background: #fdeaea;
-      color: #c62828;
-      border: 1px solid #ef9a9a;
-    }
-
-    .warning {
-      display: block;
-      background: #fff6dc;
-      color: #8a5a00;
-      border: 1px solid #f0cd6b;
-    }
-
-    .footer {
-      text-align: center;
-      margin-top: 24px;
-      font-size: 12px;
-      color: #777;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>IGNOU RC Delhi-2 Staff Attendance</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;padding:14px;font-family:Arial,sans-serif;background:#f1f4f8;color:#222}
+.card{width:100%;max-width:540px;margin:10px auto;background:#fff;border-radius:18px;padding:22px;box-shadow:0 4px 18px rgba(0,0,0,.12)}
+h1{text-align:center;margin:0;font-size:28px} h2{text-align:center;margin:6px 0;font-size:20px;color:#444} h3{text-align:center;margin:8px 0 20px;font-size:17px}
+label{display:block;font-weight:700;margin:12px 0 7px}
+input{width:100%;padding:14px;border:1px solid #bbb;border-radius:9px;font-size:17px}
+button{width:100%;border:0;border-radius:10px;padding:15px;margin-top:12px;font-size:17px;font-weight:700;cursor:pointer}
+.blue{background:#1a73e8;color:#fff} .green{background:#16883a;color:#fff} .orange{background:#f0ad00;color:#111}
+.stage{margin-top:16px;padding:14px;border:1px solid #ddd;border-radius:12px;background:#fafafa}
+.hidden{display:none!important}
+.msg{margin-top:12px;padding:13px;border-radius:10px;line-height:1.45;text-align:center}
+.ok{background:#e8f5e9;color:#14752d;border:1px solid #92d6a2}
+.bad{background:#fdeaea;color:#c62828;border:1px solid #ef9a9a}
+.warn{background:#fff6dc;color:#8a5a00;border:1px solid #f0cd6b}
+.info{background:#eaf2ff;color:#174d91;border:1px solid #b8d4ff}
+video,#photo{width:100%;border-radius:12px;background:#111;margin-top:12px}
+video{transform:scaleX(-1)} #photo{display:none}
+.small{font-size:13px;color:#666;line-height:1.45}
+.grid p{margin:8px 0}
+.code{font-size:24px;letter-spacing:5px;text-align:center;font-weight:700}
+.footer{text-align:center;margin-top:22px;font-size:12px;color:#777}
+</style>
 </head>
-
 <body>
+<div class="card">
+<h1>IGNOU</h1>
+<h2>Regional Centre Delhi-2</h2>
+<h3>Staff Attendance System</h3>
 
-<div class="container">
+<div id="employeeStage" class="stage">
+<label>Employee ID</label>
+<input id="employeeId" inputmode="numeric" autocomplete="off" placeholder="Enter Employee ID">
+<button class="blue" onclick="verifyEmployee()">Verify Employee</button>
+<div id="employeeMsg"></div>
+</div>
 
-  <h1>IGNOU</h1>
-  <h2>Regional Centre Delhi-2</h2>
-  <h3>Live Front Camera Test</h3>
+<div id="locationStage" class="stage hidden">
+<div id="employeeInfo" class="grid"></div>
+<button class="green" onclick="verifyLocation()">📍 Verify My Location</button>
+<div id="locationMsg"></div>
+</div>
 
-  <div class="info">
-    यह केवल camera compatibility test है।<br><br>
-    <b>Start Front Camera</b> दबाने पर इसी webpage के अंदर
-    front camera का live preview खुलना चाहिए।
-    <br><br>
-    इस test में Gallery/File Upload का उपयोग नहीं किया गया है।
-  </div>
+<div id="officeStage" class="stage hidden">
+<div class="msg info">Office PC/Laptop पर दिखाई दे रहा current 6-digit verification code दर्ज करें.</div>
+<label>Current Office Code</label>
+<input id="officeCode" class="code" inputmode="numeric" maxlength="6" placeholder="000000">
+<button class="blue" onclick="verifyOfficeCode()">✓ Verify Office Code</button>
+<div id="officeMsg"></div>
+</div>
 
-  <button id="startButton" onclick="startCamera()">
-    📷 Start Front Camera
-  </button>
+<div id="cameraStage" class="stage hidden">
+<div class="msg ok">✓ Employee Verified<br>✓ GPS / Geofence Verified<br>✓ Dynamic Office Code Verified</div>
+<div class="msg info">📷 Live Attendance Selfie<br><span class="small">Gallery upload नहीं है. Selfie इसी live front camera से capture होगी.</span></div>
+<button id="startCameraBtn" class="blue" onclick="startCamera()">📷 Start Front Camera</button>
+<video id="video" class="hidden" autoplay playsinline muted></video>
+<button id="captureBtn" class="green hidden" onclick="captureSelfie()">📸 Capture Selfie</button>
+<canvas id="canvas" class="hidden"></canvas>
+<img id="photo" alt="Captured Selfie">
+<button id="retakeBtn" class="orange hidden" onclick="retakeSelfie()">↩ Retake Selfie</button>
+<div id="cameraMsg"></div>
 
-  <video
-    id="video"
-    autoplay
-    playsinline
-    muted>
-  </video>
+<form id="submitForm" method="post" action="https://script.google.com/a/macros/ignou.ac.in/s/AKfycbzhZc6AMyUCqnhRGzJnEW92stLQXOFKT_l_5bFAqV6mSZBPSoN-klK834T1gK4XZibL/exec" class="hidden">
+<input type="hidden" name="action" value="submitAttendance">
+<input type="hidden" id="formSessionToken" name="sessionToken">
+<input type="hidden" id="formSelfieData" name="selfieData">
+</form>
+<button id="submitBtn" class="green hidden" onclick="submitAttendance()">✓ Submit Attendance</button>
+</div>
 
-  <button id="captureButton" onclick="captureSelfie()">
-    📸 Capture Selfie
-  </button>
-
-  <canvas id="canvas"></canvas>
-
-  <img id="capturedPhoto" alt="Captured Selfie">
-
-  <button id="retakeButton" onclick="retakeSelfie()">
-    🔄 Retake Selfie
-  </button>
-
-  <div id="status" class="status"></div>
-
-  <div class="footer">
-    IGNOU Regional Centre Delhi-2<br>
-    Camera Compatibility Test
-  </div>
-
+<div class="footer">IGNOU Regional Centre Delhi-2<br>Staff Attendance Verification System</div>
 </div>
 
 <script>
-
+const API_URL = 'https://script.google.com/a/macros/ignou.ac.in/s/AKfycbzhZc6AMyUCqnhRGzJnEW92stLQXOFKT_l_5bFAqV6mSZBPSoN-klK834T1gK4XZibL/exec';
+const STORAGE_KEY = 'ignouGithubAttendanceSession';
+let staffData = null;
+let sessionToken = '';
 let cameraStream = null;
+let selfieData = '';
 
-const video =
-  document.getElementById("video");
+function msg(id,text,type='info') {
+  document.getElementById(id).innerHTML = `<div class="msg ${type}">${text}</div>`;
+}
 
-const canvas =
-  document.getElementById("canvas");
+function jsonp(action, params={}) {
+  return new Promise((resolve,reject)=>{
+    const cb = '__ignou_cb_' + Date.now() + '_' + Math.floor(Math.random()*100000);
+    const script = document.createElement('script');
+    const timer = setTimeout(()=>{
+      cleanup();
+      reject(new Error('Server response timeout.'));
+    },20000);
+    function cleanup(){
+      clearTimeout(timer);
+      try{delete window[cb]}catch(e){}
+      script.remove();
+    }
+    window[cb] = data => { cleanup(); resolve(data); };
+    const q = new URLSearchParams({api:action,callback:cb,...params});
+    script.onerror = ()=>{ cleanup(); reject(new Error('Unable to contact attendance server.')); };
+    script.src = API_URL + '?' + q.toString();
+    document.body.appendChild(script);
+  });
+}
 
-const capturedPhoto =
-  document.getElementById("capturedPhoto");
+async function verifyEmployee() {
+  const employeeId = document.getElementById('employeeId').value.trim();
+  if(!employeeId) return msg('employeeMsg','Please enter Employee ID.','bad');
+  msg('employeeMsg','⏳ Verifying employee...','warn');
+  try {
+    const r = await jsonp('getStaff',{employeeId});
+    if(!r.success) return msg('employeeMsg','✕ '+r.message,'bad');
+    staffData = r;
+    msg('employeeMsg','✓ Employee successfully verified.','ok');
+    document.getElementById('employeeInfo').innerHTML =
+      `<p><b>Employee ID:</b> ${escapeHtml(r.employeeId)}</p>
+       <p><b>Name:</b> ${escapeHtml(r.name)}</p>
+       <p><b>Designation:</b> ${escapeHtml(r.designation)}</p>`;
+    document.getElementById('locationStage').classList.remove('hidden');
+  } catch(e) { msg('employeeMsg','✕ '+e.message,'bad'); }
+}
 
-const startButton =
-  document.getElementById("startButton");
+function verifyLocation() {
+  if(!staffData) return;
+  if(!navigator.geolocation) return msg('locationMsg','Geolocation is not supported on this device.','bad');
+  msg('locationMsg','⏳ Getting accurate GPS location...','warn');
+  navigator.geolocation.getCurrentPosition(async pos=>{
+    try {
+      const r = await jsonp('createSession',{
+        employeeId:staffData.employeeId,
+        latitude:pos.coords.latitude,
+        longitude:pos.coords.longitude,
+        accuracy:pos.coords.accuracy
+      });
+      if(!r.success) {
+        const extra = r.distance != null ? `<br>Distance: ${r.distance} metres` : '';
+        return msg('locationMsg','✕ '+r.message+extra,'bad');
+      }
+      sessionToken = r.sessionToken;
+      localStorage.setItem(STORAGE_KEY,sessionToken);
+      msg('locationMsg',
+        `✓ GPS verified.<br>Accuracy: ±${r.accuracy} metres<br>Distance from RC: ${r.distance} metres<br>Allowed Radius: ${r.allowedRadius} metres`,
+        'ok');
+      document.getElementById('officeStage').classList.remove('hidden');
+    } catch(e) { msg('locationMsg','✕ '+e.message,'bad'); }
+  }, err=>{
+    msg('locationMsg','✕ Location unavailable: '+err.message,'bad');
+  },{enableHighAccuracy:true,timeout:20000,maximumAge:0});
+}
 
-const captureButton =
-  document.getElementById("captureButton");
-
-const retakeButton =
-  document.getElementById("retakeButton");
-
-const statusBox =
-  document.getElementById("status");
-
+async function verifyOfficeCode() {
+  const code = document.getElementById('officeCode').value.replace(/\D/g,'').slice(0,6);
+  document.getElementById('officeCode').value = code;
+  if(code.length!==6) return msg('officeMsg','Please enter the 6-digit office code.','bad');
+  if(!sessionToken) return msg('officeMsg','Attendance session missing. Please start again.','bad');
+  msg('officeMsg','⏳ Verifying office code...','warn');
+  try {
+    const r = await jsonp('verifyOfficeCode',{sessionToken,officeCode:code});
+    if(!r.success) return msg('officeMsg','✕ '+r.message,'bad');
+    msg('officeMsg','✓ Dynamic Office Code Verified.','ok');
+    document.getElementById('cameraStage').classList.remove('hidden');
+    document.getElementById('cameraStage').scrollIntoView({behavior:'smooth'});
+  } catch(e) { msg('officeMsg','✕ '+e.message,'bad'); }
+}
 
 async function startCamera() {
-
-  statusBox.className = "status warning";
-  statusBox.innerHTML =
-    "⏳ Opening front camera...";
-
+  msg('cameraMsg','⏳ Opening front camera...','warn');
   try {
-
-    if (
-      !navigator.mediaDevices ||
-      !navigator.mediaDevices.getUserMedia
-    ) {
-
-      throw new Error(
-        "Camera API is not supported by this browser."
-      );
-    }
-
-
-    if (cameraStream) {
-
-      cameraStream
-        .getTracks()
-        .forEach(track => track.stop());
-
-    }
-
-
-    const constraints = {
-
-      audio: false,
-
-      video: {
-
-        facingMode: {
-          ideal: "user"
-        },
-
-        width: {
-          ideal: 1280
-        },
-
-        height: {
-          ideal: 720
-        }
-
-      }
-
-    };
-
-
-    cameraStream =
-      await navigator.mediaDevices.getUserMedia(
-        constraints
-      );
-
-
-    video.srcObject =
-      cameraStream;
-
-
-    video.style.display =
-      "block";
-
-
-    capturedPhoto.style.display =
-      "none";
-
-
-    startButton.style.display =
-      "none";
-
-
-    captureButton.style.display =
-      "block";
-
-
-    retakeButton.style.display =
-      "none";
-
-
-    statusBox.className =
-      "status success";
-
-
-    statusBox.innerHTML =
-      "✓ Front camera opened successfully.<br>" +
-      "अब Capture Selfie दबाएँ.";
-
-
-  } catch (error) {
-
-    console.error(error);
-
-
-    statusBox.className =
-      "status error";
-
-
-    let message =
-      "❌ Camera could not be opened.<br><br>";
-
-
-    if (
-      error.name === "NotAllowedError"
-    ) {
-
-      message +=
-        "Camera permission was denied or blocked.";
-
-    }
-
-    else if (
-      error.name === "NotFoundError"
-    ) {
-
-      message +=
-        "No camera was found on this device.";
-
-    }
-
-    else if (
-      error.name === "NotReadableError"
-    ) {
-
-      message +=
-        "Camera may already be in use by another application.";
-
-    }
-
-    else {
-
-      message +=
-        error.message ||
-        "Unknown camera error.";
-
-    }
-
-
-    message +=
-      "<br><br>Error: " +
-      (error.name || "Unknown");
-
-
-    statusBox.innerHTML =
-      message;
-
+    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia)
+      throw new Error('Live camera is not supported by this browser.');
+    stopCamera();
+    cameraStream = await navigator.mediaDevices.getUserMedia({
+      audio:false,
+      video:{facingMode:{ideal:'user'},width:{ideal:1280},height:{ideal:720}}
+    });
+    const video = document.getElementById('video');
+    video.srcObject = cameraStream;
+    video.classList.remove('hidden');
+    document.getElementById('startCameraBtn').classList.add('hidden');
+    document.getElementById('captureBtn').classList.remove('hidden');
+    document.getElementById('retakeBtn').classList.add('hidden');
+    document.getElementById('photo').style.display='none';
+    document.getElementById('submitBtn').classList.add('hidden');
+    selfieData='';
+    msg('cameraMsg','✓ Front camera opened. Capture your selfie.','ok');
+  } catch(e) {
+    msg('cameraMsg','✕ Camera could not be opened.<br>'+escapeHtml(e.name||'')+' '+escapeHtml(e.message||''),'bad');
   }
-
 }
-
-
 
 function captureSelfie() {
-
-  if (
-    !cameraStream ||
-    !video.videoWidth
-  ) {
-
-    statusBox.className =
-      "status error";
-
-    statusBox.innerHTML =
-      "❌ Camera is not ready.";
-
-    return;
-
-  }
-
-
-  const context =
-    canvas.getContext("2d");
-
-
-  canvas.width =
-    video.videoWidth;
-
-
-  canvas.height =
-    video.videoHeight;
-
-
-  /*
-   Mirror the saved selfie so it matches
-   the front-camera preview.
-  */
-
-  context.save();
-
-  context.translate(
-    canvas.width,
-    0
-  );
-
-  context.scale(
-    -1,
-    1
-  );
-
-
-  context.drawImage(
-    video,
-    0,
-    0,
-    canvas.width,
-    canvas.height
-  );
-
-
-  context.restore();
-
-
-  const selfieData =
-    canvas.toDataURL(
-      "image/jpeg",
-      0.85
-    );
-
-
-  capturedPhoto.src =
-    selfieData;
-
-
-  capturedPhoto.style.display =
-    "block";
-
-
-  video.style.display =
-    "none";
-
-
-  captureButton.style.display =
-    "none";
-
-
-  retakeButton.style.display =
-    "block";
-
-
+  const video=document.getElementById('video');
+  if(!cameraStream || !video.videoWidth) return msg('cameraMsg','Camera is not ready.','bad');
+  const canvas=document.getElementById('canvas');
+  const maxW=720;
+  const scale=Math.min(1,maxW/video.videoWidth);
+  canvas.width=Math.round(video.videoWidth*scale);
+  canvas.height=Math.round(video.videoHeight*scale);
+  const ctx=canvas.getContext('2d');
+  ctx.save();
+  ctx.translate(canvas.width,0);
+  ctx.scale(-1,1);
+  ctx.drawImage(video,0,0,canvas.width,canvas.height);
+  ctx.restore();
+  selfieData=canvas.toDataURL('image/jpeg',0.72);
+  const photo=document.getElementById('photo');
+  photo.src=selfieData;
+  photo.style.display='block';
+  video.classList.add('hidden');
+  document.getElementById('captureBtn').classList.add('hidden');
+  document.getElementById('retakeBtn').classList.remove('hidden');
+  document.getElementById('submitBtn').classList.remove('hidden');
   stopCamera();
-
-
-  statusBox.className =
-    "status success";
-
-
-  statusBox.innerHTML =
-    "✓ Selfie captured successfully.<br>" +
-    "Live camera test passed.";
-
+  msg('cameraMsg','✓ Live selfie captured successfully.','ok');
 }
-
-
 
 function retakeSelfie() {
-
-  capturedPhoto.src = "";
-
-  capturedPhoto.style.display =
-    "none";
-
-
-  retakeButton.style.display =
-    "none";
-
-
-  startButton.style.display =
-    "block";
-
-
-  statusBox.className =
-    "status warning";
-
-
-  statusBox.innerHTML =
-    "📷 Tap Start Front Camera to take the selfie again.";
-
+  selfieData='';
+  document.getElementById('photo').src='';
+  document.getElementById('photo').style.display='none';
+  document.getElementById('retakeBtn').classList.add('hidden');
+  document.getElementById('submitBtn').classList.add('hidden');
+  document.getElementById('startCameraBtn').classList.remove('hidden');
+  msg('cameraMsg','Tap Start Front Camera to retake your selfie.','info');
 }
 
+function submitAttendance() {
+  if(!sessionToken) return msg('cameraMsg','Attendance session missing. Please start again.','bad');
+  if(!selfieData) return msg('cameraMsg','Please capture a live selfie first.','bad');
+  document.getElementById('formSessionToken').value=sessionToken;
+  document.getElementById('formSelfieData').value=selfieData;
+  document.getElementById('submitBtn').disabled=true;
+  document.getElementById('submitBtn').textContent='Submitting Attendance...';
+  localStorage.removeItem(STORAGE_KEY);
+  document.getElementById('submitForm').submit();
+}
 
+async function recoverSession() {
+  const token=localStorage.getItem(STORAGE_KEY);
+  if(!token) return;
+  try {
+    const r=await jsonp('getSession',{sessionToken:token});
+    if(!r.success) { localStorage.removeItem(STORAGE_KEY); return; }
+    sessionToken=token;
+    const s=r.session;
+    staffData={employeeId:s.employeeId,name:s.name,designation:s.designation};
+    document.getElementById('employeeId').value=s.employeeId;
+    msg('employeeMsg','✓ Attendance Session Recovered.','ok');
+    document.getElementById('employeeInfo').innerHTML =
+      `<p><b>Employee ID:</b> ${escapeHtml(s.employeeId)}</p>
+       <p><b>Name:</b> ${escapeHtml(s.name)}</p>
+       <p><b>Designation:</b> ${escapeHtml(s.designation)}</p>`;
+    document.getElementById('locationStage').classList.remove('hidden');
+    msg('locationMsg',
+      `✓ Previous GPS session recovered.<br>Accuracy: ±${s.accuracy} metres<br>Distance from RC: ${s.distance} metres`,
+      'ok');
+    document.getElementById('officeStage').classList.remove('hidden');
+    if(s.officeCodeVerified) {
+      msg('officeMsg','✓ Previous Dynamic Office Code verification recovered.','ok');
+      document.getElementById('cameraStage').classList.remove('hidden');
+    }
+  } catch(e) {}
+}
 
 function stopCamera() {
-
-  if (cameraStream) {
-
-    cameraStream
-      .getTracks()
-      .forEach(track => track.stop());
-
-    cameraStream = null;
-
+  if(cameraStream) {
+    cameraStream.getTracks().forEach(t=>t.stop());
+    cameraStream=null;
   }
-
 }
 
+function escapeHtml(v) {
+  return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
 
-
-window.addEventListener(
-  "beforeunload",
-  stopCamera
-);
-
+document.getElementById('officeCode').addEventListener('input',e=>{
+  e.target.value=e.target.value.replace(/\D/g,'').slice(0,6);
+});
+window.addEventListener('beforeunload',stopCamera);
+window.addEventListener('load',recoverSession);
 </script>
-
 </body>
 </html>
