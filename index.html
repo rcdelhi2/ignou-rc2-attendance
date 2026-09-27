@@ -66,7 +66,7 @@ video{transform:scaleX(-1)} #photo{display:none}
 <button id="retakeBtn" class="orange hidden" onclick="retakeSelfie()">↩ Retake Selfie</button>
 <div id="cameraMsg"></div>
 
-<form id="submitForm" method="post" action="https://script.google.com/a/macros/ignou.ac.in/s/AKfycbzhZc6AMyUCqnhRGzJnEW92stLQXOFKT_l_5bFAqV6mSZBPSoN-klK834T1gK4XZibL/exec" class="hidden">
+<form id="submitForm" method="post" action="https://script.google.com/macros/s/AKfycbzhZc6AMyUCqnhRGzJnEW92stLQXOFKT_I_5bFAqV6mSZBPSoN-kIK834T1gK4XZibL/exec" class="hidden">
 <input type="hidden" name="action" value="submitAttendance">
 <input type="hidden" id="formSessionToken" name="sessionToken">
 <input type="hidden" id="formSelfieData" name="selfieData">
@@ -78,7 +78,7 @@ video{transform:scaleX(-1)} #photo{display:none}
 </div>
 
 <script>
-const API_URL = 'https://script.google.com/a/macros/ignou.ac.in/s/AKfycbzhZc6AMyUCqnhRGzJnEW92stLQXOFKT_l_5bFAqV6mSZBPSoN-klK834T1gK4XZibL/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbzhZc6AMyUCqnhRGzJnEW92stLQXOFKT_I_5bFAqV6mSZBPSoN-kIK834T1gK4XZibL/exec';
 const STORAGE_KEY = 'ignouGithubAttendanceSession';
 let staffData = null;
 let sessionToken = '';
