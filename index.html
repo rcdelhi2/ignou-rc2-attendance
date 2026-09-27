@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+  <title>IGNOU RC Delhi-2 - Camera Test</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+      background: #f1f4f8;
+      color: #222;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 520px;
+      margin: 20px auto;
+      background: #ffffff;
+      border-radius: 18px;
+      padding: 24px;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.12);
+    }
+
+    h1 {
+      margin: 0;
+      text-align: center;
+      font-size: 28px;
+    }
+
+    h2 {
+      margin: 8px 0 0;
+      text-align: center;
+      font-size: 20px;
+      color: #444;
+    }
+
+    h3 {
+      margin: 10px 0 24px;
+      text-align: center;
+      font-size: 17px;
+    }
+
+    .info {
+      background: #eaf2ff;
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 18px;
+      line-height: 1.5;
+      color: #174d91;
+    }
+
+    video,
+    canvas,
+    #capturedPhoto {
+      width: 100%;
+      border-radius: 12px;
+      background: #111;
+    }
+
+    video {
+      display: none;
+      transform: scaleX(-1);
+      margin-top: 15px;
+    }
+
+    #capturedPhoto {
+      display: none;
+      margin-top: 15px;
+    }
+
+    canvas {
+      display: none;
+    }
+
+    button {
+      width: 100%;
+      border: none;
+      border-radius: 10px;
+      padding: 15px;
+      margin-top: 14px;
+      font-size: 17px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    #startButton {
+      background: #1a73e8;
+      color: white;
+    }
+
+    #captureButton {
+      display: none;
+      background: #16883a;
+      color: white;
+    }
+
+    #retakeButton {
+      display: none;
+      background: #f0ad00;
+      color: #111;
+    }
+
+    .status {
+      margin-top: 16px;
+      padding: 14px;
+      border-radius: 10px;
+      text-align: center;
+      line-height: 1.5;
+      display: none;
+    }
+
+    .success {
+      display: block;
+      background: #e8f5e9;
+      color: #14752d;
+      border: 1px solid #92d6a2;
+    }
+
+    .error {
+      display: block;
+      background: #fdeaea;
+      color: #c62828;
+      border: 1px solid #ef9a9a;
+    }
+
+    .warning {
+      display: block;
+      background: #fff6dc;
+      color: #8a5a00;
+      border: 1px solid #f0cd6b;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 24px;
+      font-size: 12px;
+      color: #777;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <h1>IGNOU</h1>
+  <h2>Regional Centre Delhi-2</h2>
+  <h3>Live Front Camera Test</h3>
+
+  <div class="info">
+    यह केवल camera compatibility test है।<br><br>
+    <b>Start Front Camera</b> दबाने पर इसी webpage के अंदर
+    front camera का live preview खुलना चाहिए।
+    <br><br>
+    इस test में Gallery/File Upload का उपयोग नहीं किया गया है।
+  </div>
+
+  <button id="startButton" onclick="startCamera()">
+    📷 Start Front Camera
+  </button>
+
+  <video
+    id="video"
+    autoplay
+    playsinline
+    muted>
+  </video>
+
+  <button id="captureButton" onclick="captureSelfie()">
+    📸 Capture Selfie
+  </button>
+
+  <canvas id="canvas"></canvas>
+
+  <img id="capturedPhoto" alt="Captured Selfie">
+
+  <button id="retakeButton" onclick="retakeSelfie()">
+    🔄 Retake Selfie
+  </button>
+
+  <div id="status" class="status"></div>
+
+  <div class="footer">
+    IGNOU Regional Centre Delhi-2<br>
+    Camera Compatibility Test
+  </div>
+
+</div>
+
+<script>
+
+let cameraStream = null;
+
+const video =
+  document.getElementById("video");
+
+const canvas =
+  document.getElementById("canvas");
+
+const capturedPhoto =
+  document.getElementById("capturedPhoto");
+
+const startButton =
+  document.getElementById("startButton");
+
+const captureButton =
+  document.getElementById("captureButton");
+
+const retakeButton =
+  document.getElementById("retakeButton");
+
+const statusBox =
+  document.getElementById("status");
+
+
+async function startCamera() {
+
+  statusBox.className = "status warning";
+  statusBox.innerHTML =
+    "⏳ Opening front camera...";
+
+  try {
+
+    if (
+      !navigator.mediaDevices ||
+      !navigator.mediaDevices.getUserMedia
+    ) {
+
+      throw new Error(
+        "Camera API is not supported by this browser."
+      );
+    }
+
+
+    if (cameraStream) {
+
+      cameraStream
+        .getTracks()
+        .forEach(track => track.stop());
+
+    }
+
+
+    const constraints = {
+
+      audio: false,
+
+      video: {
+
+        facingMode: {
+          ideal: "user"
+        },
+
+        width: {
+          ideal: 1280
+        },
+
+        height: {
+          ideal: 720
+        }
+
+      }
+
+    };
+
+
+    cameraStream =
+      await navigator.mediaDevices.getUserMedia(
+        constraints
+      );
+
+
+    video.srcObject =
+      cameraStream;
+
+
+    video.style.display =
+      "block";
+
+
+    capturedPhoto.style.display =
+      "none";
+
+
+    startButton.style.display =
+      "none";
+
+
+    captureButton.style.display =
+      "block";
+
+
+    retakeButton.style.display =
+      "none";
+
+
+    statusBox.className =
+      "status success";
+
+
+    statusBox.innerHTML =
+      "✓ Front camera opened successfully.<br>" +
+      "अब Capture Selfie दबाएँ.";
+
+
+  } catch (error) {
+
+    console.error(error);
+
+
+    statusBox.className =
+      "status error";
+
+
+    let message =
+      "❌ Camera could not be opened.<br><br>";
+
+
+    if (
+      error.name === "NotAllowedError"
+    ) {
+
+      message +=
+        "Camera permission was denied or blocked.";
+
+    }
+
+    else if (
+      error.name === "NotFoundError"
+    ) {
+
+      message +=
+        "No camera was found on this device.";
+
+    }
+
+    else if (
+      error.name === "NotReadableError"
+    ) {
+
+      message +=
+        "Camera may already be in use by another application.";
+
+    }
+
+    else {
+
+      message +=
+        error.message ||
+        "Unknown camera error.";
+
+    }
+
+
+    message +=
+      "<br><br>Error: " +
+      (error.name || "Unknown");
+
+
+    statusBox.innerHTML =
+      message;
+
+  }
+
+}
+
+
+
+function captureSelfie() {
+
+  if (
+    !cameraStream ||
+    !video.videoWidth
+  ) {
+
+    statusBox.className =
+      "status error";
+
+    statusBox.innerHTML =
+      "❌ Camera is not ready.";
+
+    return;
+
+  }
+
+
+  const context =
+    canvas.getContext("2d");
+
+
+  canvas.width =
+    video.videoWidth;
+
+
+  canvas.height =
+    video.videoHeight;
+
+
+  /*
+   Mirror the saved selfie so it matches
+   the front-camera preview.
+  */
+
+  context.save();
+
+  context.translate(
+    canvas.width,
+    0
+  );
+
+  context.scale(
+    -1,
+    1
+  );
+
+
+  context.drawImage(
+    video,
+    0,
+    0,
+    canvas.width,
+    canvas.height
+  );
+
+
+  context.restore();
+
+
+  const selfieData =
+    canvas.toDataURL(
+      "image/jpeg",
+      0.85
+    );
+
+
+  capturedPhoto.src =
+    selfieData;
+
+
+  capturedPhoto.style.display =
+    "block";
+
+
+  video.style.display =
+    "none";
+
+
+  captureButton.style.display =
+    "none";
+
+
+  retakeButton.style.display =
+    "block";
+
+
+  stopCamera();
+
+
+  statusBox.className =
+    "status success";
+
+
+  statusBox.innerHTML =
+    "✓ Selfie captured successfully.<br>" +
+    "Live camera test passed.";
+
+}
+
+
+
+function retakeSelfie() {
+
+  capturedPhoto.src = "";
+
+  capturedPhoto.style.display =
+    "none";
+
+
+  retakeButton.style.display =
+    "none";
+
+
+  startButton.style.display =
+    "block";
+
+
+  statusBox.className =
+    "status warning";
+
+
+  statusBox.innerHTML =
+    "📷 Tap Start Front Camera to take the selfie again.";
+
+}
+
+
+
+function stopCamera() {
+
+  if (cameraStream) {
+
+    cameraStream
+      .getTracks()
+      .forEach(track => track.stop());
+
+    cameraStream = null;
+
+  }
+
+}
+
+
+
+window.addEventListener(
+  "beforeunload",
+  stopCamera
+);
+
+</script>
+
+</body>
+</html>
