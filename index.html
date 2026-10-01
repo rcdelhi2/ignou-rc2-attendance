@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">\n<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">\n<meta http-equiv="Pragma" content="no-cache">\n<meta http-equiv="Expires" content="0">
 <title>IGNOU RC Delhi-2 Staff Attendance</title>
 <style>
 *{box-sizing:border-box}
@@ -171,27 +171,93 @@ async function verifyOfficeCode() {
 }
 
 async function startCamera() {
-  msg('cameraMsg','⏳ Opening front camera...','warn');
+  const btn = document.getElementById('startCameraBtn');
+  msg('cameraMsg','⏳ Opening live front camera...','warn');
+
+  if (!window.isSecureContext) {
+    return msg('cameraMsg','✕ Live camera requires HTTPS. Please open the GitHub Pages HTTPS address.','bad');
+  }
+
+  if (!navigator.mediaDevices || typeof navigator.mediaDevices.getUserMedia !== 'function') {
+    return msg('cameraMsg','✕ This browser does not provide live-camera access. Please use current Chrome on Android or Safari on iPhone.','bad');
+  }
+
+  btn.disabled = true;
+
   try {
-    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia)
-      throw new Error('Live camera is not supported by this browser.');
     stopCamera();
-    cameraStream = await navigator.mediaDevices.getUserMedia({
-      audio:false,
-      video:{facingMode:{ideal:'user'},width:{ideal:1280},height:{ideal:720}}
-    });
+
+    // Request a real live MediaStream. There is deliberately NO file/gallery input.
+    try {
+      cameraStream = await navigator.mediaDevices.getUserMedia({
+        audio: false,
+        video: {
+          facingMode: { exact: 'user' },
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        }
+      });
+    } catch (firstError) {
+      // Some phones do not accept "exact:user"; retry with a compatible front-camera preference.
+      if (firstError && (firstError.name === 'OverconstrainedError' || firstError.name === 'NotFoundError')) {
+        cameraStream = await navigator.mediaDevices.getUserMedia({
+          audio: false,
+          video: {
+            facingMode: 'user',
+            width: { ideal: 1280 },
+            height: { ideal: 720 }
+          }
+        });
+      } else {
+        throw firstError;
+      }
+    }
+
     const video = document.getElementById('video');
+    video.setAttribute('playsinline','');
+    video.setAttribute('autoplay','');
+    video.setAttribute('muted','');
+    video.muted = true;
     video.srcObject = cameraStream;
+
+    await new Promise((resolve, reject) => {
+      if (video.readyState >= 2 && video.videoWidth > 0) return resolve();
+      const timer = setTimeout(() => reject(new Error('Camera preview did not start.')), 10000);
+      video.onloadedmetadata = async () => {
+        try {
+          await video.play();
+          clearTimeout(timer);
+          resolve();
+        } catch (err) {
+          clearTimeout(timer);
+          reject(err);
+        }
+      };
+    });
+
     video.classList.remove('hidden');
-    document.getElementById('startCameraBtn').classList.add('hidden');
+    btn.classList.add('hidden');
     document.getElementById('captureBtn').classList.remove('hidden');
     document.getElementById('retakeBtn').classList.add('hidden');
-    document.getElementById('photo').style.display='none';
+    document.getElementById('photo').style.display = 'none';
     document.getElementById('submitBtn').classList.add('hidden');
-    selfieData='';
-    msg('cameraMsg','✓ Front camera opened. Capture your selfie.','ok');
+    selfieData = '';
+    msg('cameraMsg','✓ Live front camera opened. Look at the camera and tap Capture Selfie.','ok');
+
   } catch(e) {
-    msg('cameraMsg','✕ Camera could not be opened.<br>'+escapeHtml(e.name||'')+' '+escapeHtml(e.message||''),'bad');
+    stopCamera();
+
+    let text = '✕ Camera could not be opened.';
+    if (e && (e.name === 'NotAllowedError' || e.name === 'SecurityError')) {
+      text += '<br>Camera permission is blocked. Allow Camera for this GitHub Pages site in the browser/site settings, then reload the page.';
+    } else if (e && e.name === 'NotReadableError') {
+      text += '<br>The camera is busy in another app/tab. Close the other camera app and try again.';
+    } else {
+      text += '<br>' + escapeHtml((e && e.name) || '') + ' ' + escapeHtml((e && e.message) || '');
+    }
+    msg('cameraMsg', text, 'bad');
+  } finally {
+    btn.disabled = false;
   }
 }
 
