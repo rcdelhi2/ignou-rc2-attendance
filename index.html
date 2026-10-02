@@ -84,6 +84,7 @@ let staffData = null;
 let sessionToken = '';
 let cameraStream = null;
 let selfieData = '';
+let attendanceMeta = {latitude:null,longitude:null,accuracy:null,distance:null,allowedRadius:null,officeVerified:false};
 
 function msg(id,text,type='info') {
   document.getElementById(id).innerHTML = `<div class="msg ${type}">${text}</div>`;
@@ -144,6 +145,11 @@ function verifyLocation() {
         return msg('locationMsg','✕ '+r.message+extra,'bad');
       }
       sessionToken = r.sessionToken;
+      attendanceMeta.latitude = Number(pos.coords.latitude);
+      attendanceMeta.longitude = Number(pos.coords.longitude);
+      attendanceMeta.accuracy = Number(r.accuracy != null ? r.accuracy : pos.coords.accuracy);
+      attendanceMeta.distance = Number(r.distance);
+      attendanceMeta.allowedRadius = Number(r.allowedRadius);
       localStorage.setItem(STORAGE_KEY,sessionToken);
       msg('locationMsg',
         `✓ GPS verified.<br>Accuracy: ±${r.accuracy} metres<br>Distance from RC: ${r.distance} metres<br>Allowed Radius: ${r.allowedRadius} metres`,
@@ -164,6 +170,7 @@ async function verifyOfficeCode() {
   try {
     const r = await jsonp('verifyOfficeCode',{sessionToken,officeCode:code});
     if(!r.success) return msg('officeMsg','✕ '+r.message,'bad');
+    attendanceMeta.officeVerified = true;
     msg('officeMsg','✓ Dynamic Office Code Verified.','ok');
     document.getElementById('cameraStage').classList.remove('hidden');
     document.getElementById('cameraStage').scrollIntoView({behavior:'smooth'});
@@ -264,18 +271,58 @@ async function startCamera() {
 function captureSelfie() {
   const video=document.getElementById('video');
   if(!cameraStream || !video.videoWidth) return msg('cameraMsg','Camera is not ready.','bad');
+  if(!staffData) return msg('cameraMsg','Employee information is missing. Please start again.','bad');
+
   const canvas=document.getElementById('canvas');
   const maxW=720;
   const scale=Math.min(1,maxW/video.videoWidth);
-  canvas.width=Math.round(video.videoWidth*scale);
-  canvas.height=Math.round(video.videoHeight*scale);
+  const imageW=Math.round(video.videoWidth*scale);
+  const imageH=Math.round(video.videoHeight*scale);
+  const panelH=190;
+
+  canvas.width=imageW;
+  canvas.height=imageH+panelH;
   const ctx=canvas.getContext('2d');
+
   ctx.save();
-  ctx.translate(canvas.width,0);
+  ctx.translate(imageW,0);
   ctx.scale(-1,1);
-  ctx.drawImage(video,0,0,canvas.width,canvas.height);
+  ctx.drawImage(video,0,0,imageW,imageH);
   ctx.restore();
-  selfieData=canvas.toDataURL('image/jpeg',0.72);
+
+  ctx.fillStyle='#111';
+  ctx.fillRect(0,imageH,imageW,panelH);
+  ctx.fillStyle='#fff';
+  ctx.textBaseline='top';
+
+  const now=new Date();
+  const dateText=new Intl.DateTimeFormat('en-GB',{
+    timeZone:'Asia/Kolkata',day:'2-digit',month:'2-digit',year:'numeric'
+  }).format(now);
+  const timeText=new Intl.DateTimeFormat('en-IN',{
+    timeZone:'Asia/Kolkata',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true
+  }).format(now);
+
+  const lat=Number.isFinite(attendanceMeta.latitude)?attendanceMeta.latitude.toFixed(6):'N/A';
+  const lon=Number.isFinite(attendanceMeta.longitude)?attendanceMeta.longitude.toFixed(6):'N/A';
+  const acc=Number.isFinite(attendanceMeta.accuracy)?Math.round(attendanceMeta.accuracy)+' m':'N/A';
+  const dist=Number.isFinite(attendanceMeta.distance)?Math.round(attendanceMeta.distance)+' m':'N/A';
+
+  const lines=[
+    'IGNOU Regional Centre Delhi-2',
+    'Employee ID: '+String(staffData.employeeId||'')+' | '+String(staffData.name||''),
+    'Date: '+dateText+' | Time: '+timeText,
+    'GPS: '+lat+', '+lon,
+    'Accuracy: ±'+acc+' | Distance from RC: '+dist,
+    'Office Code: '+(attendanceMeta.officeVerified?'VERIFIED':'NOT VERIFIED')
+  ];
+
+  const fontSize=Math.max(14,Math.min(19,Math.round(imageW/38)));
+  ctx.font='600 '+fontSize+'px Arial, sans-serif';
+  const lineH=Math.floor(panelH/lines.length);
+  lines.forEach((line,i)=>ctx.fillText(line,16,imageH+10+i*lineH,imageW-32));
+
+  selfieData=canvas.toDataURL('image/jpeg',0.82);
   const photo=document.getElementById('photo');
   photo.src=selfieData;
   photo.style.display='block';
@@ -284,7 +331,7 @@ function captureSelfie() {
   document.getElementById('retakeBtn').classList.remove('hidden');
   document.getElementById('submitBtn').classList.remove('hidden');
   stopCamera();
-  msg('cameraMsg','✓ Live selfie captured successfully.','ok');
+  msg('cameraMsg','✓ Live selfie captured with attendance details. Please verify the photo before submitting.','ok');
 }
 
 function retakeSelfie() {
@@ -317,6 +364,11 @@ async function recoverSession() {
     sessionToken=token;
     const s=r.session;
     staffData={employeeId:s.employeeId,name:s.name,designation:s.designation};
+    attendanceMeta.latitude=Number(s.latitude);
+    attendanceMeta.longitude=Number(s.longitude);
+    attendanceMeta.accuracy=Number(s.accuracy);
+    attendanceMeta.distance=Number(s.distance);
+    attendanceMeta.officeVerified=!!s.officeCodeVerified;
     document.getElementById('employeeId').value=s.employeeId;
     msg('employeeMsg','✓ Attendance Session Recovered.','ok');
     document.getElementById('employeeInfo').innerHTML =
